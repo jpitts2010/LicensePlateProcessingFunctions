@@ -8,15 +8,20 @@ using Azure.Messaging.EventGrid;
 using System.IO;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using ImageProcessingModels;
+using System.Net.Http;
 
 namespace JP
 {
     public static class ProcessImages
     {
+        private static HttpClient _client;
+
         [FunctionName("ProcessImages")]
         public static async Task Run([EventGridTrigger]EventGridEvent eventGridEvent,[Blob(blobPath: "{data.url}", access: FileAccess.Read,
             Connection = "plateImagesStorageConnection")] Stream incomingPlateImageBlob, ILogger log)
         {
+            _client = _client ?? new HttpClient();
             log.LogInformation(eventGridEvent.Data.ToString());
 
             var eventDataInfo = JsonConvert.DeserializeObject<EventDataInfo>(eventGridEvent.Data.ToString());
@@ -57,6 +62,15 @@ namespace JP
             var processor = new LicensePlateImageProcessor(log);
             var licensePlateText = await processor.GetLicensePlate(licensePlateImage);
             log.LogInformation($"LicensePlateText: {licensePlateText}");
+
+            // Send the details to Event Grid.
+            log.LogInformation($"Processing {eventDataInfo.url}");
+            await new TriggerEvent(log, _client).SendLicensePlateData(new LicensePlateData()
+            {
+                FileName = eventDataInfo.url,
+                LicensePlateText = licensePlateText,
+                TimeStamp = DateTime.UtcNow
+            });
         }
     }
 }
