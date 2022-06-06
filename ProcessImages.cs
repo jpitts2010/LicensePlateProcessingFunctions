@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Azure.Messaging.EventGrid;
 using System.IO;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace JP
 {
@@ -17,6 +18,19 @@ namespace JP
             Connection = "plateImagesStorageConnection")] Stream incomingPlateImageBlob, ILogger log)
         {
             log.LogInformation(eventGridEvent.Data.ToString());
+
+            var eventDataInfo = JsonConvert.DeserializeObject<EventDataInfo>(eventGridEvent.Data.ToString());
+            log.LogInformation($"File: {eventDataInfo.url}");
+            log.LogInformation($"contentType: {eventDataInfo.contentType}");
+            log.LogInformation($"contentLength: {eventDataInfo.contentLength}");
+
+            // verify file is file we can handle
+            if (eventDataInfo.contentType.ToLower() != "image/jpeg"
+                && eventDataInfo.contentType.ToLower() != "image/png")
+            {
+                log.LogInformation("Blob content type is not valid for image processing, exiting gracefully");
+                return;
+            }
 
             //checking incoming data
             if (incomingPlateImageBlob is null)
