@@ -1,7 +1,7 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/azure/functions-action
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy dotnet core app to Azure Function App - LicensePlateProcessing20220606jp
+name: Build and deploy DN6 Azure Function App
 
 on:
   push:
@@ -12,6 +12,7 @@ on:
 env:
   AZURE_FUNCTIONAPP_PACKAGE_PATH: '.' # set this to the path to your web app project, defaults to the repository root
   DOTNET_VERSION: '6.0.x' # set this to the dotnet version to use
+  AZURE_FUNTIONAPP_NAME: 'LicensePlateProcessing20220606jp'
 
 jobs:
   build-and-deploy:
@@ -36,7 +37,7 @@ jobs:
         uses: Azure/functions-action@v1
         id: fa
         with:
-          app-name: 'LicensePlateProcessing20220606jp'
+          app-name: '${{ env.AZURE_FUNCTIONAPP_NAME }}'
           slot-name: 'Production'
           package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_CED982A0AAA74DCAB972216B63336CCA }}
