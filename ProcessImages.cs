@@ -16,7 +16,7 @@ namespace JP
         public static async Task Run([EventGridTrigger]EventGridEvent eventGridEvent,[Blob(blobPath: "{data.url}", access: FileAccess.Read,
             Connection = "plateImagesStorageConnection")] Stream incomingPlateImageBlob, ILogger log)
         {
-            // log.LogInformation(eventGridEvent.Data.ToString());
+            log.LogInformation(eventGridEvent.Data.ToString());
 
             //checking incoming data
             if (incomingPlateImageBlob is null)
